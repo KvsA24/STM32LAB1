@@ -47,13 +47,51 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+typedef struct
+{
+	  GPIO_TypeDef* GPIOx;
+	  uint16_t GPIO_Pin;
+} Array;
+Array LED_Array[12] = {
+		  {GPIOA, GPIO_PIN_4},
+		  {GPIOA, GPIO_PIN_5},
+		  {GPIOA, GPIO_PIN_6},
+		  {GPIOA, GPIO_PIN_7},
+		  {GPIOA, GPIO_PIN_8},
+		  {GPIOA, GPIO_PIN_9},
+		  {GPIOA, GPIO_PIN_10},
+		  {GPIOA, GPIO_PIN_11},
+		  {GPIOA, GPIO_PIN_12},
+		  {GPIOA, GPIO_PIN_13},
+		  {GPIOA, GPIO_PIN_14},
+		  {GPIOA, GPIO_PIN_15},
+};
+/*void test(int num) // LED TEST FUNCTION
+{
+	  HAL_GPIO_WritePin(LED_Array[num].GPIOx, LED_Array[num].GPIO_Pin, SET);
+}*/
+void clearAllClock()
+{
+	  for(int i = 0; i < 12; i++)
+	  {
+		  HAL_GPIO_WritePin(LED_Array[i].GPIOx, LED_Array[i].GPIO_Pin, RESET);
+	  }
+}
+void setNumberOnClock(int num)
+{
+	  HAL_GPIO_WritePin(LED_Array[num].GPIOx, LED_Array[num].GPIO_Pin, SET);
+}
+/*void clearNumberOnClock(int num)
+{
+	  HAL_GPIO_WritePin(LED_Array[num].GPIOx, LED_Array[num].GPIO_Pin, RESET);
+}*/
 /* USER CODE END 0 */
 
 /**
@@ -83,16 +121,41 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  int Sec_Counter = 0;
+  int Min_Counter = 0;
+  int Hour_Counter = 0;
   while (1)
   {
-    /* USER CODE END WHILE */
-
+    /* USER CODE END WHILE */		//Counter for clock
+	if(Sec_Counter >= 60)
+	{
+		Sec_Counter = 0;
+		Min_Counter++;
+	}
+	if(Min_Counter >= 60)
+	{
+		Min_Counter = 0;
+		Hour_Counter++;
+	}
+	if(Hour_Counter >= 12)
+	{
+		clearAllClock();
+		Hour_Counter = 0;
+	}
+	clearAllClock();
+	setNumberOnClock(Sec_Counter / 5);
+	setNumberOnClock(Min_Counter / 5);
+	setNumberOnClock(Hour_Counter);
+	Sec_Counter++;
+	HAL_Delay(1000);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -131,6 +194,36 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, LED_A_Pin|LED_B_Pin|LED_C_Pin|LED_D_Pin
+                          |LED_E_Pin|LED_F_Pin|LED_G_Pin|LED_H_Pin
+                          |LED_I_Pin|LED_J_Pin|LED_K_Pin|LED_L_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : LED_A_Pin LED_B_Pin LED_C_Pin LED_D_Pin
+                           LED_E_Pin LED_F_Pin LED_G_Pin LED_H_Pin
+                           LED_I_Pin LED_J_Pin LED_K_Pin LED_L_Pin */
+  GPIO_InitStruct.Pin = LED_A_Pin|LED_B_Pin|LED_C_Pin|LED_D_Pin
+                          |LED_E_Pin|LED_F_Pin|LED_G_Pin|LED_H_Pin
+                          |LED_I_Pin|LED_J_Pin|LED_K_Pin|LED_L_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
